@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Alert, Switch, Modal, ScrollView, ActivityIndicator, Image, Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -9,8 +9,8 @@ import { CheckCircleIcon } from 'react-native-heroicons/solid';
 import ViewportOverlay from '../components/ViewportOverlay';
 import SettingsSheet from '../components/SettingsSheet';
 import SearchModal from '../components/SearchModal';
-import { MAP_STYLE_NO_LABELS } from '../constants/mapStyle';
-import { DEFAULT_SETTINGS } from '../constants/settings';
+import { generateMapStyle } from '../constants/mapStyle';
+import { DEFAULT_CAPTURE_SETTINGS, DEFAULT_EXPORT_SETTINGS } from '../constants/settings';
 import { THEMES, getAllThemes } from '../constants/themes';
 import { generateThumbnailWithAspect } from '../utils/thumbnailGenerator';
 import { saveProject } from '../services/projectStorage';
@@ -19,7 +19,11 @@ import { pixelateImage, applyTheme } from '../utils/themeProcessor';
 const MapScreen = ({ navigation }) => {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  // Combine capture and export settings for UI state (only capture settings are saved)
+  const [settings, setSettings] = useState({
+    ...DEFAULT_CAPTURE_SETTINGS,
+    ...DEFAULT_EXPORT_SETTINGS,
+  });
   const [showSettings, setShowSettings] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [previewEnabled, setPreviewEnabled] = useState(false);
@@ -40,6 +44,11 @@ const MapScreen = ({ navigation }) => {
   const handleUpdateSettings = (newSettings) => {
     setSettings({ ...settings, ...newSettings });
   };
+
+  // Generate map style based on feature toggles
+  const mapStyle = useMemo(() => {
+    return generateMapStyle(settings.mapFeatures);
+  }, [settings.mapFeatures]);
 
   // Calculate viewport dimensions (same logic as ViewportOverlay)
   const calculateViewportDimensions = useCallback(() => {
@@ -98,8 +107,13 @@ const MapScreen = ({ navigation }) => {
         settings.aspectRatio.ratio
       );
 
-      // Apply the theme
-      const themed = await applyTheme(pixelated, theme, settings.pixelationSize.value);
+      // Apply the theme with all effects
+      const themed = await applyTheme(pixelated, theme, settings.pixelationSize.value, {
+        ditherIntensity: settings.ditherIntensity.value,
+        edgeDetection: settings.edgeDetection.value,
+        contrast: settings.contrast.value,
+        saturation: settings.saturation.value,
+      });
 
       const duration = Date.now() - startTime;
       console.log(`Theme preview generated in ${duration}ms`);
@@ -112,23 +126,16 @@ const MapScreen = ({ navigation }) => {
       setIsGeneratingPreview(false);
       // Don't show alert on auto-refresh errors
     }
-  }, [settings.pixelationSize.value, settings.aspectRatio.ratio]);
+  }, [settings.aspectRatio.ratio, settings.pixelationSize.value]);
 
-  // Debounced preview refresh on map movement
+  // Preview refresh on map movement (no debounce for testing)
   const handleRegionChange = useCallback((newRegion) => {
     setRegion(newRegion);
 
     // Only regenerate preview if enabled
     if (previewEnabled && selectedTheme) {
-      // Clear any pending preview generation
-      if (previewTimeoutRef.current) {
-        clearTimeout(previewTimeoutRef.current);
-      }
-
-      // Debounce: wait 200ms after user stops panning/zooming
-      previewTimeoutRef.current = setTimeout(() => {
-        generateThemePreview(selectedTheme);
-      }, 200);
+      // Generate immediately without debounce
+      generateThemePreview(selectedTheme);
     }
   }, [previewEnabled, selectedTheme, generateThemePreview]);
 
@@ -158,7 +165,17 @@ const MapScreen = ({ navigation }) => {
         generateThemePreview(selectedTheme);
       }, 500);
     }
-  }, [settings.pixelationSize.value, settings.aspectRatio.ratio]);
+  }, [
+    settings.aspectRatio.ratio,
+    settings.pixelationSize.value,
+    settings.ditherIntensity.value,
+    settings.edgeDetection.value,
+    settings.contrast.value,
+    settings.saturation.value,
+    previewEnabled,
+    selectedTheme,
+    generateThemePreview,
+  ]);
 
   const handleCapture = async () => {
     try {
@@ -193,9 +210,8 @@ const MapScreen = ({ navigation }) => {
         },
         settings: {
           aspectRatio: settings.aspectRatio,
-          pixelationSize: settings.pixelationSize,
-          outputResolution: settings.outputResolution,
           showGrid: settings.showGrid,
+          mapFeatures: settings.mapFeatures,
         },
         previewTheme: previewEnabled ? selectedTheme.id : null,
         thumbnail: thumbnailUri,
@@ -232,7 +248,7 @@ const MapScreen = ({ navigation }) => {
           style={styles.map}
           initialRegion={region}
           onRegionChangeComplete={handleRegionChange}
-          customMapStyle={MAP_STYLE_NO_LABELS}
+          customMapStyle={mapStyle}
           showsUserLocation={false}
           showsMyLocationButton={false}
           showsCompass={false}
@@ -248,31 +264,24 @@ const MapScreen = ({ navigation }) => {
       />
 
       {/* Theme Preview - positioned to match viewport */}
-      {previewEnabled && (() => {
+      {previewEnabled && previewImage && (() => {
         const { width, height } = calculateViewportDimensions();
         return (
           <View style={[
             styles.previewOverlay,
             { width, height }
           ]} pointerEvents="none">
-            {isGeneratingPreview ? (
-              <View style={styles.previewLoading}>
-                <ActivityIndicator size="large" color="#3B82F6" />
-                <Text style={styles.previewLoadingText}>Updating...</Text>
+            <View style={styles.previewContainer}>
+              <Image
+                source={{ uri: previewImage }}
+                style={styles.previewImage}
+                resizeMode="cover"
+              />
+              <View style={styles.previewLabel}>
+                <PaintBrushIcon size={12} color="#fff" strokeWidth={2} />
+                <Text style={styles.previewLabelText}>{selectedTheme.name}</Text>
               </View>
-            ) : previewImage ? (
-              <View style={styles.previewContainer}>
-                <Image
-                  source={{ uri: previewImage }}
-                  style={styles.previewImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.previewLabel}>
-                  <PaintBrushIcon size={12} color="#fff" strokeWidth={2} />
-                  <Text style={styles.previewLabelText}>{selectedTheme.name}</Text>
-                </View>
-              </View>
-            ) : null}
+            </View>
           </View>
         );
       })()}

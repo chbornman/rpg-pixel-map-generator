@@ -17,13 +17,14 @@ import {
 } from 'react-native';
 import MapView from 'react-native-maps';
 import { captureRef } from 'react-native-view-shot';
-import { ArrowLeftIcon, CheckCircleIcon, ShareIcon } from 'react-native-heroicons/outline';
+import { ArrowLeftIcon, CheckCircleIcon, ShareIcon, Cog6ToothIcon } from 'react-native-heroicons/outline';
 import { getProject } from '../services/projectStorage';
 import { saveExport } from '../services/exportStorage';
 import { getAllThemes, getThemeById } from '../constants/themes';
 import { MAP_STYLE_NO_LABELS } from '../constants/mapStyle';
 import { pixelateImage, applyTheme } from '../utils/themeProcessor';
-import { OUTPUT_RESOLUTIONS_ARRAY, PIXELATION_SIZES_ARRAY } from '../constants/settings';
+import { DEFAULT_EXPORT_SETTINGS } from '../constants/settings';
+import ExportSettingsSheet from '../components/ExportSettingsSheet';
 
 const ExportScreen = ({ route, navigation }) => {
   const { projectId } = route.params;
@@ -34,11 +35,10 @@ const ExportScreen = ({ route, navigation }) => {
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState('');
 
-  // Export settings (can override project defaults)
+  // Export settings
   const [selectedTheme, setSelectedTheme] = useState(null);
-  const [selectedResolution, setSelectedResolution] = useState(null);
-  const [selectedPixelation, setSelectedPixelation] = useState(null);
-  const [showThemePicker, setShowThemePicker] = useState(false);
+  const [exportSettings, setExportSettings] = useState(DEFAULT_EXPORT_SETTINGS);
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     loadProject();
@@ -55,12 +55,10 @@ const ExportScreen = ({ route, navigation }) => {
 
       setProject(proj);
 
-      // Set defaults from project settings
+      // Set theme from project preview (if any)
       setSelectedTheme(
         proj.previewTheme ? getThemeById(proj.previewTheme) : getAllThemes()[0]
       );
-      setSelectedResolution(proj.settings.outputResolution);
-      setSelectedPixelation(proj.settings.pixelationSize);
 
       setLoading(false);
     } catch (error) {
@@ -86,17 +84,23 @@ const ExportScreen = ({ route, navigation }) => {
       setExportProgress('Applying pixelation...');
       const pixelatedUri = await pixelateImage(
         mapUri,
-        selectedPixelation.value,
-        selectedResolution.value,
+        exportSettings.pixelationSize.value,
+        exportSettings.outputResolution.value,
         project.settings.aspectRatio.ratio
       );
 
-      // Step 3: Apply theme
-      setExportProgress('Applying theme...');
+      // Step 3: Apply theme with effects
+      setExportProgress('Applying theme with effects...');
       const themedUri = await applyTheme(
         pixelatedUri,
         selectedTheme,
-        selectedPixelation.value
+        exportSettings.pixelationSize.value,
+        {
+          ditherIntensity: exportSettings.ditherIntensity.value,
+          edgeDetection: exportSettings.edgeDetection.value,
+          contrast: exportSettings.contrast.value,
+          saturation: exportSettings.saturation.value,
+        }
       );
 
       // Step 4: Save export
@@ -107,10 +111,14 @@ const ExportScreen = ({ route, navigation }) => {
         projectId: project.id,
         theme: selectedTheme.id,
         resolution: {
-          width: selectedResolution.value,
-          height: Math.round(selectedResolution.value * project.settings.aspectRatio.ratio),
+          width: exportSettings.outputResolution.value,
+          height: Math.round(exportSettings.outputResolution.value / project.settings.aspectRatio.ratio),
         },
-        pixelationSize: selectedPixelation.value,
+        pixelationSize: exportSettings.pixelationSize.value,
+        ditherIntensity: exportSettings.ditherIntensity.value,
+        edgeDetection: exportSettings.edgeDetection.value,
+        contrast: exportSettings.contrast.value,
+        saturation: exportSettings.saturation.value,
         imagePath: themedUri,
         exportDuration,
       });
@@ -174,8 +182,14 @@ const ExportScreen = ({ route, navigation }) => {
         </TouchableOpacity>
         <View style={styles.headerInfo}>
           <Text style={styles.headerTitle}>{project.location.name}</Text>
-          <Text style={styles.headerSubtitle}>Export Settings</Text>
+          <Text style={styles.headerSubtitle}>Export Configuration</Text>
         </View>
+        <TouchableOpacity
+          style={styles.settingsButton}
+          onPress={() => setShowSettings(true)}
+        >
+          <Cog6ToothIcon size={24} color="#111827" strokeWidth={2} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content}>
@@ -224,48 +238,42 @@ const ExportScreen = ({ route, navigation }) => {
           </ScrollView>
         </View>
 
-        {/* Resolution Selection */}
+        {/* Export Settings Summary */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Output Resolution</Text>
-          <View style={styles.optionsGrid}>
-            {OUTPUT_RESOLUTIONS_ARRAY.map((res) => (
-              <TouchableOpacity
-                key={res.value}
-                style={[
-                  styles.optionCard,
-                  selectedResolution?.value === res.value && styles.optionCardSelected,
-                ]}
-                onPress={() => setSelectedResolution(res)}
-              >
-                <Text style={styles.optionLabel}>{res.label}</Text>
-                {selectedResolution?.value === res.value && (
-                  <CheckCircleIcon size={18} color="#3B82F6" />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Pixelation Selection */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Pixelation</Text>
-          <View style={styles.optionsGrid}>
-            {PIXELATION_SIZES_ARRAY.map((pix) => (
-              <TouchableOpacity
-                key={pix.value}
-                style={[
-                  styles.optionCard,
-                  selectedPixelation?.value === pix.value && styles.optionCardSelected,
-                ]}
-                onPress={() => setSelectedPixelation(pix)}
-              >
-                <Text style={styles.optionLabel}>{pix.label}</Text>
-                {selectedPixelation?.value === pix.value && (
-                  <CheckCircleIcon size={18} color="#3B82F6" />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Text style={styles.sectionTitle}>Export Settings</Text>
+          <TouchableOpacity
+            style={styles.settingsSummaryCard}
+            onPress={() => setShowSettings(true)}
+          >
+            <View style={styles.settingsSummaryRow}>
+              <Text style={styles.settingsSummaryLabel}>Resolution:</Text>
+              <Text style={styles.settingsSummaryValue}>{exportSettings.outputResolution.label}</Text>
+            </View>
+            <View style={styles.settingsSummaryRow}>
+              <Text style={styles.settingsSummaryLabel}>Pixelation:</Text>
+              <Text style={styles.settingsSummaryValue}>{exportSettings.pixelationSize.label}</Text>
+            </View>
+            <View style={styles.settingsSummaryRow}>
+              <Text style={styles.settingsSummaryLabel}>Dither:</Text>
+              <Text style={styles.settingsSummaryValue}>{exportSettings.ditherIntensity.label}</Text>
+            </View>
+            <View style={styles.settingsSummaryRow}>
+              <Text style={styles.settingsSummaryLabel}>Edge Detection:</Text>
+              <Text style={styles.settingsSummaryValue}>{exportSettings.edgeDetection.label}</Text>
+            </View>
+            <View style={styles.settingsSummaryRow}>
+              <Text style={styles.settingsSummaryLabel}>Contrast:</Text>
+              <Text style={styles.settingsSummaryValue}>{exportSettings.contrast.label}</Text>
+            </View>
+            <View style={styles.settingsSummaryRow}>
+              <Text style={styles.settingsSummaryLabel}>Saturation:</Text>
+              <Text style={styles.settingsSummaryValue}>{exportSettings.saturation.label}</Text>
+            </View>
+            <View style={styles.settingsTapHint}>
+              <Cog6ToothIcon size={16} color="#6B7280" strokeWidth={2} />
+              <Text style={styles.settingsTapHintText}>Tap to customize</Text>
+            </View>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -302,6 +310,16 @@ const ExportScreen = ({ route, navigation }) => {
           </TouchableOpacity>
         )}
       </View>
+
+      {/* Export Settings Sheet */}
+      <ExportSettingsSheet
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+        settings={exportSettings}
+        onUpdateSettings={(newSettings) =>
+          setExportSettings({ ...exportSettings, ...newSettings })
+        }
+      />
     </View>
   );
 };
@@ -336,6 +354,9 @@ const styles = StyleSheet.create({
   },
   headerInfo: {
     flex: 1,
+  },
+  settingsButton: {
+    marginLeft: 12,
   },
   headerTitle: {
     fontSize: 18,
@@ -480,6 +501,41 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  settingsSummaryCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    padding: 16,
+  },
+  settingsSummaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  settingsSummaryLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  settingsSummaryValue: {
+    fontSize: 14,
+    color: '#111827',
+    fontWeight: '600',
+  },
+  settingsTapHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    gap: 6,
+  },
+  settingsTapHintText: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '500',
   },
 });
 

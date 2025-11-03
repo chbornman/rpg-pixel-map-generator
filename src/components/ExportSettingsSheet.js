@@ -6,22 +6,21 @@ import {
   TouchableOpacity,
   Modal,
   ScrollView,
-  Switch,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import {
-  ASPECT_RATIOS,
   PIXELATION_SIZES_ARRAY,
+  OUTPUT_RESOLUTIONS_ARRAY,
   DITHER_INTENSITIES_ARRAY,
   EDGE_DETECTION_ARRAY,
   CONTRAST_LEVELS_ARRAY,
   SATURATION_LEVELS_ARRAY,
 } from '../constants/settings';
 
-const SettingsSheet = ({ visible, onClose, settings, onUpdateSettings }) => {
+const ExportSettingsSheet = ({ visible, onClose, settings, onUpdateSettings }) => {
   const renderOptionButton = (option, isSelected, onPress) => (
     <TouchableOpacity
-      key={option.value || option.label}
+      key={option.value}
       style={[styles.optionButton, isSelected && styles.optionButtonSelected]}
       onPress={onPress}
     >
@@ -70,7 +69,7 @@ const SettingsSheet = ({ visible, onClose, settings, onUpdateSettings }) => {
           <View style={styles.handle} />
 
           <View style={styles.header}>
-            <Text style={styles.title}>Capture Settings</Text>
+            <Text style={styles.title}>Export Settings</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Text style={styles.closeButtonText}>✕</Text>
             </TouchableOpacity>
@@ -81,40 +80,14 @@ const SettingsSheet = ({ visible, onClose, settings, onUpdateSettings }) => {
             contentContainerStyle={styles.contentContainer}
             showsVerticalScrollIndicator={false}
           >
-            {/* Aspect Ratio */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Aspect Ratio</Text>
-              <Text style={styles.sectionDescription}>
-                Defines the shape of the viewport overlay
-              </Text>
-              <View style={styles.optionsGrid}>
-                {Object.values(ASPECT_RATIOS).map((ratio) =>
-                  renderOptionButton(
-                    ratio,
-                    settings.aspectRatio.value === ratio.value,
-                    () => onUpdateSettings({ aspectRatio: ratio })
-                  )
-                )}
-              </View>
-            </View>
-
-            {/* Show Grid */}
-            <View style={styles.section}>
-              <View style={styles.switchRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sectionTitle}>Show Viewport Grid</Text>
-                  <Text style={styles.sectionDescription}>
-                    Display grid overlay on the map viewport
-                  </Text>
-                </View>
-                <Switch
-                  value={settings.showGrid}
-                  onValueChange={(value) => onUpdateSettings({ showGrid: value })}
-                  trackColor={{ false: '#767577', true: '#81b0ff' }}
-                  thumbColor={settings.showGrid ? '#3B82F6' : '#f4f3f4'}
-                />
-              </View>
-            </View>
+            {/* Output Resolution */}
+            {renderSlider(
+              'Output Resolution',
+              'Final image width (height varies by aspect ratio)',
+              OUTPUT_RESOLUTIONS_ARRAY,
+              settings.outputResolution.value,
+              (resolution) => onUpdateSettings({ outputResolution: resolution })
+            )}
 
             {/* Pixelation Size */}
             {renderSlider(
@@ -168,98 +141,6 @@ const SettingsSheet = ({ visible, onClose, settings, onUpdateSettings }) => {
               settings.saturation.value,
               (saturation) => onUpdateSettings({ saturation: saturation })
             )}
-
-            {/* Map Features */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Map Features</Text>
-              <Text style={styles.sectionDescription}>
-                Toggle map elements to show or hide
-              </Text>
-
-              <View style={styles.switchRow}>
-                <Text style={styles.switchLabel}>Roads</Text>
-                <Switch
-                  value={settings.mapFeatures?.roads ?? true}
-                  onValueChange={(value) =>
-                    onUpdateSettings({
-                      mapFeatures: { ...settings.mapFeatures, roads: value }
-                    })
-                  }
-                  trackColor={{ false: '#767577', true: '#81b0ff' }}
-                  thumbColor={settings.mapFeatures?.roads ? '#3B82F6' : '#f4f3f4'}
-                />
-              </View>
-
-              <View style={styles.switchRow}>
-                <Text style={styles.switchLabel}>Buildings</Text>
-                <Switch
-                  value={settings.mapFeatures?.buildings ?? true}
-                  onValueChange={(value) =>
-                    onUpdateSettings({
-                      mapFeatures: { ...settings.mapFeatures, buildings: value }
-                    })
-                  }
-                  trackColor={{ false: '#767577', true: '#81b0ff' }}
-                  thumbColor={settings.mapFeatures?.buildings ? '#3B82F6' : '#f4f3f4'}
-                />
-              </View>
-
-              <View style={styles.switchRow}>
-                <Text style={styles.switchLabel}>Water</Text>
-                <Switch
-                  value={settings.mapFeatures?.water ?? true}
-                  onValueChange={(value) =>
-                    onUpdateSettings({
-                      mapFeatures: { ...settings.mapFeatures, water: value }
-                    })
-                  }
-                  trackColor={{ false: '#767577', true: '#81b0ff' }}
-                  thumbColor={settings.mapFeatures?.water ? '#3B82F6' : '#f4f3f4'}
-                />
-              </View>
-
-              <View style={styles.switchRow}>
-                <Text style={styles.switchLabel}>Parks</Text>
-                <Switch
-                  value={settings.mapFeatures?.parks ?? true}
-                  onValueChange={(value) =>
-                    onUpdateSettings({
-                      mapFeatures: { ...settings.mapFeatures, parks: value }
-                    })
-                  }
-                  trackColor={{ false: '#767577', true: '#81b0ff' }}
-                  thumbColor={settings.mapFeatures?.parks ? '#3B82F6' : '#f4f3f4'}
-                />
-              </View>
-
-              <View style={styles.switchRow}>
-                <Text style={styles.switchLabel}>Transit Lines</Text>
-                <Switch
-                  value={settings.mapFeatures?.transit ?? false}
-                  onValueChange={(value) =>
-                    onUpdateSettings({
-                      mapFeatures: { ...settings.mapFeatures, transit: value }
-                    })
-                  }
-                  trackColor={{ false: '#767577', true: '#81b0ff' }}
-                  thumbColor={settings.mapFeatures?.transit ? '#3B82F6' : '#f4f3f4'}
-                />
-              </View>
-
-              <View style={styles.switchRow}>
-                <Text style={styles.switchLabel}>Landscape/Terrain</Text>
-                <Switch
-                  value={settings.mapFeatures?.landscape ?? true}
-                  onValueChange={(value) =>
-                    onUpdateSettings({
-                      mapFeatures: { ...settings.mapFeatures, landscape: value }
-                    })
-                  }
-                  trackColor={{ false: '#767577', true: '#81b0ff' }}
-                  thumbColor={settings.mapFeatures?.landscape ? '#3B82F6' : '#f4f3f4'}
-                />
-              </View>
-            </View>
           </ScrollView>
         </View>
       </View>
@@ -284,7 +165,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '80%',
+    maxHeight: '85%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.3,
@@ -334,9 +215,9 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   sectionTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: '#111827',
     marginBottom: 6,
     letterSpacing: 0.2,
   },
@@ -390,17 +271,6 @@ const styles = StyleSheet.create({
   optionTextSelected: {
     color: '#fff',
   },
-  switchRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  switchLabel: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#374151',
-  },
 });
 
-export default SettingsSheet;
+export default ExportSettingsSheet;

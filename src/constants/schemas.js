@@ -56,12 +56,18 @@ export const createProject = ({
       address: location.address || null,
     },
 
-    // Capture settings (editable until export)
+    // Capture settings (viewport configuration and map features)
     settings: {
       aspectRatio: settings.aspectRatio,
-      pixelationSize: settings.pixelationSize,
-      outputResolution: settings.outputResolution,
       showGrid: settings.showGrid || false,
+      mapFeatures: settings.mapFeatures || {
+        roads: true,
+        buildings: true,
+        water: true,
+        parks: true,
+        transit: false,
+        landscape: true,
+      },
     },
 
     // Preview state
@@ -83,6 +89,10 @@ export const createExport = ({
   theme,
   resolution,
   pixelationSize,
+  ditherIntensity,
+  edgeDetection,
+  contrast,
+  saturation,
   imagePath,
   fileSize,
   exportDuration,
@@ -104,6 +114,10 @@ export const createExport = ({
       height: resolution.height,
     },
     pixelationSize,
+    ditherIntensity,
+    edgeDetection,
+    contrast,
+    saturation,
 
     // Output
     imagePath,

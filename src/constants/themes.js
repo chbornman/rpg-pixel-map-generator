@@ -1,4 +1,4 @@
-// Pixel art theme definitions
+// Pixel art theme definitions - color palettes only
 export const THEMES = {
   CLASSIC_JRPG: {
     id: 'classic-jrpg',
@@ -15,12 +15,6 @@ export const THEMES = {
       '#404040', '#2f2f2f', '#1a1a1a', '#000000',
     ],
     colorCount: 32,
-    style: {
-      ditherIntensity: 0.3,
-      edgeDetection: 'soft',
-      contrast: 1.1,
-      saturation: 1.2,
-    },
   },
   GAMEBOY: {
     id: 'gameboy',
@@ -33,12 +27,6 @@ export const THEMES = {
       '#9bbc0f', // Lightest
     ],
     colorCount: 4,
-    style: {
-      ditherIntensity: 0.7,
-      edgeDetection: 'strong',
-      contrast: 1.3,
-      saturation: 0,
-    },
   },
   NES_ADVENTURE: {
     id: 'nes-adventure',
@@ -51,12 +39,6 @@ export const THEMES = {
       '#58f898', '#a4a4a4', '#d8b040', '#fcfc00',
     ],
     colorCount: 16,
-    style: {
-      ditherIntensity: 0.2,
-      edgeDetection: 'strong',
-      contrast: 1.2,
-      saturation: 0.9,
-    },
   },
   MODERN_PIXEL: {
     id: 'modern-pixel',
@@ -79,12 +61,6 @@ export const THEMES = {
       '#4d9be6', '#22d5de', '#66ffd4', '#e0feff',
     ],
     colorCount: 64,
-    style: {
-      ditherIntensity: 0.4,
-      edgeDetection: 'selective',
-      contrast: 1.05,
-      saturation: 1.1,
-    },
   },
   MINIMAL_RETRO: {
     id: 'minimal-retro',
@@ -101,12 +77,6 @@ export const THEMES = {
       '#ffffff', // White (highlights)
     ],
     colorCount: 8,
-    style: {
-      ditherIntensity: 0,
-      edgeDetection: 'none',
-      contrast: 1.0,
-      saturation: 0.7,
-    },
   },
 };
 

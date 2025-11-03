@@ -140,7 +140,7 @@ const GalleryScreen = ({ navigation }) => {
             )}
           </View>
           <Text style={styles.settings}>
-            {item.settings.aspectRatio.value} • {item.settings.pixelationSize.value}px
+            {item.settings.aspectRatio.value}
           </Text>
         </View>
 
