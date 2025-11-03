@@ -37,11 +37,6 @@ const ViewportOverlay = ({ aspectRatio = 1, showGrid = false }) => {
 
         {/* Viewport frame */}
         <View style={[styles.viewport, { width, height }]}>
-          <View style={styles.corner} />
-          <View style={[styles.corner, styles.topRight]} />
-          <View style={[styles.corner, styles.bottomLeft]} />
-          <View style={[styles.corner, styles.bottomRight]} />
-
           {showGrid && (
             <>
               <View style={[styles.gridLine, styles.verticalLine1]} />
@@ -79,38 +74,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fff',
     backgroundColor: 'transparent',
-  },
-  corner: {
-    position: 'absolute',
-    width: 20,
-    height: 20,
-    borderColor: '#00ff00',
-    top: -2,
-    left: -2,
-    borderTopWidth: 4,
-    borderLeftWidth: 4,
-  },
-  topRight: {
-    left: undefined,
-    right: -2,
-    borderLeftWidth: 0,
-    borderRightWidth: 4,
-  },
-  bottomLeft: {
-    top: undefined,
-    bottom: -2,
-    borderTopWidth: 0,
-    borderBottomWidth: 4,
-  },
-  bottomRight: {
-    top: undefined,
-    left: undefined,
-    bottom: -2,
-    right: -2,
-    borderTopWidth: 0,
-    borderLeftWidth: 0,
-    borderRightWidth: 4,
-    borderBottomWidth: 4,
   },
   gridLine: {
     position: 'absolute',

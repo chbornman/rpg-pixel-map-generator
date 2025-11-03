@@ -105,6 +105,7 @@ const MapScreen = ({ navigation }) => {
       console.log(`Theme preview generated in ${duration}ms`);
 
       setPreviewImage(themed);
+      hasGeneratedPreview.current = true;
       setIsGeneratingPreview(false);
     } catch (error) {
       console.error('Error generating theme preview:', error);
@@ -140,10 +141,13 @@ const MapScreen = ({ navigation }) => {
     };
   }, []);
 
-  // Regenerate preview when settings change (if preview is already showing)
+  // Regenerate preview when settings change (if preview is enabled)
+  // Use a ref to track if we've generated at least one preview
+  const hasGeneratedPreview = useRef(false);
+
   useEffect(() => {
-    // Only regenerate if we have an existing preview
-    if (previewEnabled && selectedTheme && previewImage) {
+    // Only regenerate if preview is enabled and we've already generated once
+    if (previewEnabled && selectedTheme && hasGeneratedPreview.current) {
       // Debounce settings changes
       if (previewTimeoutRef.current) {
         clearTimeout(previewTimeoutRef.current);
@@ -154,7 +158,7 @@ const MapScreen = ({ navigation }) => {
         generateThemePreview(selectedTheme);
       }, 500);
     }
-  }, [settings.pixelationSize.value, settings.aspectRatio.ratio, previewEnabled, selectedTheme, previewImage, generateThemePreview]);
+  }, [settings.pixelationSize.value, settings.aspectRatio.ratio]);
 
   const handleCapture = async () => {
     try {
@@ -361,6 +365,7 @@ const MapScreen = ({ navigation }) => {
                 onPress={() => {
                   setPreviewEnabled(false);
                   setPreviewImage(null);
+                  hasGeneratedPreview.current = false;
                   setShowThemePicker(false);
                 }}
               >
