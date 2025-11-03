@@ -1,77 +1,100 @@
-import React from 'react';
-import { Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Text, View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MapScreen from '../screens/MapScreen';
 import GalleryScreen from '../screens/GalleryScreen';
-import ThemeSelectionScreen from '../screens/ThemeSelectionScreen';
+import ExportsLibraryScreen from '../screens/ExportsLibraryScreen';
+
+// Lazy-loaded ExportScreen to avoid Skia initialization issues
+// ExportScreen uses @shopify/react-native-skia which needs to be loaded after app initialization
+const LazyExportScreen = (props) => {
+  const [Screen, setScreen] = useState(null);
+
+  useEffect(() => {
+    import('../screens/ExportScreen').then((module) => {
+      setScreen(() => module.default);
+    });
+  }, []);
+
+  if (!Screen) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F9FAFB' }}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+      </View>
+    );
+  }
+
+  return <Screen {...props} />;
+};
 
 const Tab = createBottomTabNavigator();
-const Stack = createNativeStackNavigator();
+const RootStack = createNativeStackNavigator();
 
-// Stack for Map flow (Map -> Theme Selection)
-const MapStack = () => {
+// Bottom tab navigator
+const TabNavigator = () => {
   return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="Map"
+    <Tab.Navigator
+      screenOptions={{
+        tabBarActiveTintColor: '#007AFF',
+        tabBarInactiveTintColor: '#8E8E93',
+        tabBarStyle: {
+          display: 'none',
+        },
+        headerShown: false,
+      }}
+    >
+      <Tab.Screen
+        name="MapTab"
         component={MapScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ThemeSelection"
-        component={ThemeSelectionScreen}
         options={{
-          title: 'Select Theme',
-          headerStyle: { backgroundColor: '#000' },
-          headerTintColor: '#fff',
+          tabBarLabel: 'Capture',
+          tabBarIcon: ({ color, size }) => (
+            <Text style={{ fontSize: size, color }}>📸</Text>
+          ),
         }}
       />
-    </Stack.Navigator>
+      <Tab.Screen
+        name="Gallery"
+        component={GalleryScreen}
+        options={{
+          tabBarLabel: 'Gallery',
+          tabBarIcon: ({ color, size }) => (
+            <Text style={{ fontSize: size, color }}>🖼️</Text>
+          ),
+        }}
+      />
+    </Tab.Navigator>
   );
 };
 
-// Main bottom tab navigator
+// Main root navigator with tabs + modal screens
 const AppNavigator = () => {
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={{
-          tabBarActiveTintColor: '#007AFF',
-          tabBarInactiveTintColor: '#8E8E93',
-          tabBarStyle: {
-            display: 'none',
-          },
-          headerShown: false,
-        }}
-      >
-        <Tab.Screen
-          name="MapTab"
-          component={MapStack}
+      <RootStack.Navigator screenOptions={{ headerShown: false }}>
+        {/* Main tabs */}
+        <RootStack.Screen name="Tabs" component={TabNavigator} />
+
+        {/* Export flow screens */}
+        <RootStack.Screen
+          name="Export"
+          component={LazyExportScreen}
           options={{
-            tabBarLabel: 'Capture',
-            tabBarIcon: ({ color, size }) => (
-              <Text style={{ fontSize: size, color }}>📸</Text>
-            ),
+            presentation: 'card',
+            animation: 'slide_from_right',
           }}
         />
-        <Tab.Screen
-          name="Gallery"
-          component={GalleryScreen}
+        <RootStack.Screen
+          name="ExportsLibrary"
+          component={ExportsLibraryScreen}
           options={{
-            tabBarLabel: 'Gallery',
-            tabBarIcon: ({ color, size }) => (
-              <Text style={{ fontSize: size, color }}>🖼️</Text>
-            ),
-            headerShown: true,
-            headerTitle: 'My RPG Maps',
-            headerStyle: {
-              backgroundColor: '#fff',
-            },
+            presentation: 'card',
+            animation: 'slide_from_right',
           }}
         />
-      </Tab.Navigator>
+      </RootStack.Navigator>
     </NavigationContainer>
   );
 };
