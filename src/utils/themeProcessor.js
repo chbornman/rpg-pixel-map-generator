@@ -139,9 +139,24 @@ export const applyTheme = async (imageUri, theme, basePixelationSize) => {
 // Basic pixelation (for initial capture)
 export const pixelateImage = async (imageUri, pixelationSize, outputSize, aspectRatio = 1) => {
   try {
+    console.log(`Pixelating: pixelationSize=${pixelationSize}, outputSize=${outputSize}, aspectRatio=${aspectRatio}`);
+
+    // Validate inputs
+    if (!pixelationSize || pixelationSize <= 0) {
+      throw new Error(`Invalid pixelationSize: ${pixelationSize}`);
+    }
+    if (!outputSize || outputSize <= 0) {
+      throw new Error(`Invalid outputSize: ${outputSize}`);
+    }
+    if (!aspectRatio || aspectRatio <= 0) {
+      throw new Error(`Invalid aspectRatio: ${aspectRatio}`);
+    }
+
     // First, get the original image dimensions
     const imageInfo = await ImageManipulator.manipulateAsync(imageUri, [], {});
     const { width: originalWidth, height: originalHeight } = imageInfo;
+
+    console.log(`Original dimensions: ${originalWidth}x${originalHeight}`);
 
     // Calculate crop dimensions to match the aspect ratio (center-cropped)
     let cropWidth, cropHeight, originX, originY;
@@ -150,27 +165,40 @@ export const pixelateImage = async (imageUri, pixelationSize, outputSize, aspect
       // Image is wider than target aspect ratio - crop width
       cropHeight = originalHeight;
       cropWidth = originalHeight * aspectRatio;
-      originX = (originalWidth - cropWidth) / 2;
+      originX = Math.floor((originalWidth - cropWidth) / 2);
       originY = 0;
     } else {
       // Image is taller than target aspect ratio - crop height
       cropWidth = originalWidth;
       cropHeight = originalWidth / aspectRatio;
       originX = 0;
-      originY = (originalHeight - cropHeight) / 2;
+      originY = Math.floor((originalHeight - cropHeight) / 2);
+    }
+
+    console.log(`Crop: ${Math.floor(cropWidth)}x${Math.floor(cropHeight)} at (${originX}, ${originY})`);
+
+    // Validate crop dimensions
+    if (cropWidth <= 0 || cropHeight <= 0) {
+      throw new Error(`Invalid crop dimensions: ${cropWidth}x${cropHeight}`);
     }
 
     // Apply crop and pixelation in one operation
     const pixelated = await ImageManipulator.manipulateAsync(
       imageUri,
       [
-        { crop: { originX, originY, width: cropWidth, height: cropHeight } },
-        { resize: { width: pixelationSize } },
-        { resize: { width: outputSize } },
+        { crop: {
+          originX: Math.floor(originX),
+          originY: Math.floor(originY),
+          width: Math.floor(cropWidth),
+          height: Math.floor(cropHeight)
+        } },
+        { resize: { width: Math.floor(pixelationSize) } },
+        { resize: { width: Math.floor(outputSize) } },
       ],
       { compress: 1, format: ImageManipulator.SaveFormat.PNG }
     );
 
+    console.log(`Pixelation complete: ${pixelated.uri}`);
     return pixelated.uri;
   } catch (error) {
     console.error('Error pixelating image:', error);

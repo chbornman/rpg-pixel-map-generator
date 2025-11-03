@@ -117,7 +117,11 @@ const GalleryScreen = ({ navigation }) => {
         {/* Thumbnail */}
         <Image
           source={{ uri: item.thumbnail }}
-          style={styles.thumbnail}
+          style={[
+            styles.thumbnail,
+            { aspectRatio: item.settings.aspectRatio.ratio }
+          ]}
+          resizeMode="cover"
         />
 
         {/* Info Overlay */}
@@ -174,12 +178,20 @@ const GalleryScreen = ({ navigation }) => {
         <Text style={styles.headerTitle}>Gallery</Text>
         <Text style={styles.headerSubtitle}>{projects.length} projects</Text>
       </View>
-      <TouchableOpacity
-        style={styles.headerButton}
-        onPress={() => navigation.navigate('ExportsLibrary')}
-      >
-        <Text style={styles.headerButtonText}>View Exports</Text>
-      </TouchableOpacity>
+      <View style={styles.headerButtons}>
+        <TouchableOpacity
+          style={[styles.headerButton, styles.secondaryButton]}
+          onPress={() => navigation.navigate('MapTab')}
+        >
+          <Text style={styles.secondaryButtonText}>Capture</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.headerButton}
+          onPress={() => navigation.navigate('ExportsLibrary')}
+        >
+          <Text style={styles.headerButtonText}>Exports</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -239,6 +251,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  secondaryButton: {
+    backgroundColor: '#E5E7EB',
+  },
+  secondaryButtonText: {
+    color: '#1F2937',
+    fontWeight: '600',
+    fontSize: 14,
+  },
   grid: {
     padding: 12,
   },
@@ -257,8 +281,9 @@ const styles = StyleSheet.create({
   },
   thumbnail: {
     width: '100%',
-    aspectRatio: 1,
     backgroundColor: '#E5E7EB',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
   projectInfo: {
     padding: 12,

@@ -140,6 +140,22 @@ const MapScreen = ({ navigation }) => {
     };
   }, []);
 
+  // Regenerate preview when settings change (if preview is already showing)
+  useEffect(() => {
+    // Only regenerate if we have an existing preview
+    if (previewEnabled && selectedTheme && previewImage) {
+      // Debounce settings changes
+      if (previewTimeoutRef.current) {
+        clearTimeout(previewTimeoutRef.current);
+      }
+
+      previewTimeoutRef.current = setTimeout(() => {
+        console.log('Settings changed, regenerating preview...');
+        generateThemePreview(selectedTheme);
+      }, 500);
+    }
+  }, [settings.pixelationSize.value, settings.aspectRatio.ratio, previewEnabled, selectedTheme, previewImage, generateThemePreview]);
+
   const handleCapture = async () => {
     try {
       setIsProcessing(true);
