@@ -125,10 +125,10 @@ const MapScreen = ({ navigation }) => {
         clearTimeout(previewTimeoutRef.current);
       }
 
-      // Debounce: wait 800ms after user stops panning/zooming
+      // Debounce: wait 200ms after user stops panning/zooming
       previewTimeoutRef.current = setTimeout(() => {
         generateThemePreview(selectedTheme);
-      }, 800);
+      }, 200);
     }
   }, [previewEnabled, selectedTheme, generateThemePreview]);
 
