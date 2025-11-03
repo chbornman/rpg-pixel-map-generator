@@ -1,5 +1,5 @@
 // Custom Google Maps style - removes all text labels and POI icons
-// Keeps roads, water, buildings visible but no labels
+// Keeps roads, water, buildings visible but no labels or borders
 export const MAP_STYLE_NO_LABELS = [
   {
     elementType: 'labels',
@@ -8,6 +8,26 @@ export const MAP_STYLE_NO_LABELS = [
   {
     featureType: 'administrative',
     elementType: 'labels',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'administrative',
+    elementType: 'geometry',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'administrative',
+    elementType: 'geometry.stroke',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'administrative.country',
+    elementType: 'geometry.stroke',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'administrative.province',
+    elementType: 'geometry.stroke',
     stylers: [{ visibility: 'off' }],
   },
   {
