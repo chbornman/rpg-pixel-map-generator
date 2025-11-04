@@ -98,77 +98,6 @@ const SettingsSheet = ({ visible, onClose, settings, onUpdateSettings }) => {
               </View>
             </View>
 
-            {/* Show Grid */}
-            <View style={styles.section}>
-              <View style={styles.switchRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sectionTitle}>Show Viewport Grid</Text>
-                  <Text style={styles.sectionDescription}>
-                    Display grid overlay on the map viewport
-                  </Text>
-                </View>
-                <Switch
-                  value={settings.showGrid}
-                  onValueChange={(value) => onUpdateSettings({ showGrid: value })}
-                  trackColor={{ false: '#767577', true: '#81b0ff' }}
-                  thumbColor={settings.showGrid ? '#3B82F6' : '#f4f3f4'}
-                />
-              </View>
-            </View>
-
-            {/* Pixelation Size */}
-            {renderSlider(
-              'Pixelation Size',
-              'Pixel size - smaller values create more detailed images',
-              PIXELATION_SIZES_ARRAY,
-              settings.pixelationSize.value,
-              (size) => onUpdateSettings({ pixelationSize: size })
-            )}
-
-            {/* Dither Intensity */}
-            {renderSlider(
-              'Dither Intensity',
-              'Adds noise to smooth color transitions between palette colors',
-              DITHER_INTENSITIES_ARRAY,
-              settings.ditherIntensity.value,
-              (dither) => onUpdateSettings({ ditherIntensity: dither })
-            )}
-
-            {/* Edge Detection */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Edge Detection</Text>
-              <Text style={styles.sectionDescription}>
-                Enhance outlines and boundaries between features
-              </Text>
-              <View style={styles.optionsGrid}>
-                {EDGE_DETECTION_ARRAY.map((edge) =>
-                  renderOptionButton(
-                    edge,
-                    settings.edgeDetection.value === edge.value,
-                    () => onUpdateSettings({ edgeDetection: edge })
-                  )
-                )}
-              </View>
-            </View>
-
-            {/* Contrast */}
-            {renderSlider(
-              'Contrast',
-              'Adjust the difference between light and dark areas',
-              CONTRAST_LEVELS_ARRAY,
-              settings.contrast.value,
-              (contrast) => onUpdateSettings({ contrast: contrast })
-            )}
-
-            {/* Saturation */}
-            {renderSlider(
-              'Saturation',
-              'Adjust color intensity (0.0x = black & white)',
-              SATURATION_LEVELS_ARRAY,
-              settings.saturation.value,
-              (saturation) => onUpdateSettings({ saturation: saturation })
-            )}
-
             {/* Map Features */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Map Features</Text>
@@ -260,6 +189,59 @@ const SettingsSheet = ({ visible, onClose, settings, onUpdateSettings }) => {
                 />
               </View>
             </View>
+
+            {/* Pixelation Size */}
+            {renderSlider(
+              'Pixelation Size',
+              'Pixel size - smaller values create more detailed images',
+              PIXELATION_SIZES_ARRAY,
+              settings.pixelationSize.value,
+              (size) => onUpdateSettings({ pixelationSize: size })
+            )}
+
+            {/* Dither Intensity */}
+            {renderSlider(
+              'Dither Intensity',
+              'Adds noise to smooth color transitions between palette colors',
+              DITHER_INTENSITIES_ARRAY,
+              settings.ditherIntensity.value,
+              (dither) => onUpdateSettings({ ditherIntensity: dither })
+            )}
+
+            {/* Edge Detection */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Edge Detection</Text>
+              <Text style={styles.sectionDescription}>
+                Enhance outlines and boundaries between features
+              </Text>
+              <View style={styles.optionsGrid}>
+                {EDGE_DETECTION_ARRAY.map((edge) =>
+                  renderOptionButton(
+                    edge,
+                    settings.edgeDetection.value === edge.value,
+                    () => onUpdateSettings({ edgeDetection: edge })
+                  )
+                )}
+              </View>
+            </View>
+
+            {/* Contrast */}
+            {renderSlider(
+              'Contrast',
+              'Adjust the difference between light and dark areas',
+              CONTRAST_LEVELS_ARRAY,
+              settings.contrast.value,
+              (contrast) => onUpdateSettings({ contrast: contrast })
+            )}
+
+            {/* Saturation */}
+            {renderSlider(
+              'Saturation',
+              'Adjust color intensity (0.0x = black & white)',
+              SATURATION_LEVELS_ARRAY,
+              settings.saturation.value,
+              (saturation) => onUpdateSettings({ saturation: saturation })
+            )}
           </ScrollView>
         </View>
       </View>

@@ -3,7 +3,7 @@ import { View, StyleSheet, Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const ViewportOverlay = ({ aspectRatio = 1, showGrid = false }) => {
+const ViewportOverlay = ({ aspectRatio = 1 }) => {
   // Calculate viewport dimensions based on aspect ratio
   const calculateViewportDimensions = () => {
     const maxWidth = SCREEN_WIDTH * 0.8;
@@ -36,16 +36,7 @@ const ViewportOverlay = ({ aspectRatio = 1, showGrid = false }) => {
         <View style={[styles.dimOverlay, { width: (SCREEN_WIDTH - width) / 2 }]} />
 
         {/* Viewport frame */}
-        <View style={[styles.viewport, { width, height }]}>
-          {showGrid && (
-            <>
-              <View style={[styles.gridLine, styles.verticalLine1]} />
-              <View style={[styles.gridLine, styles.verticalLine2]} />
-              <View style={[styles.gridLine, styles.horizontalLine1]} />
-              <View style={[styles.gridLine, styles.horizontalLine2]} />
-            </>
-          )}
-        </View>
+        <View style={[styles.viewport, { width, height }]} />
 
         <View style={[styles.dimOverlay, { width: (SCREEN_WIDTH - width) / 2 }]} />
       </View>
@@ -74,34 +65,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fff',
     backgroundColor: 'transparent',
-  },
-  gridLine: {
-    position: 'absolute',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  verticalLine1: {
-    left: '33.33%',
-    top: 0,
-    bottom: 0,
-    width: 1,
-  },
-  verticalLine2: {
-    left: '66.66%',
-    top: 0,
-    bottom: 0,
-    width: 1,
-  },
-  horizontalLine1: {
-    top: '33.33%',
-    left: 0,
-    right: 0,
-    height: 1,
-  },
-  horizontalLine2: {
-    top: '66.66%',
-    left: 0,
-    right: 0,
-    height: 1,
   },
 });
 

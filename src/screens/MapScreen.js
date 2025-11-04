@@ -163,7 +163,7 @@ const MapScreen = ({ navigation }) => {
       previewTimeoutRef.current = setTimeout(() => {
         console.log('Settings changed, regenerating preview...');
         generateThemePreview(selectedTheme);
-      }, 500);
+      }, 200);
     }
   }, [
     settings.aspectRatio.ratio,
@@ -172,6 +172,7 @@ const MapScreen = ({ navigation }) => {
     settings.edgeDetection.value,
     settings.contrast.value,
     settings.saturation.value,
+    settings.mapFeatures,
     previewEnabled,
     selectedTheme,
     generateThemePreview,
@@ -210,7 +211,6 @@ const MapScreen = ({ navigation }) => {
         },
         settings: {
           aspectRatio: settings.aspectRatio,
-          showGrid: settings.showGrid,
           mapFeatures: settings.mapFeatures,
         },
         previewTheme: previewEnabled ? selectedTheme.id : null,
@@ -260,7 +260,6 @@ const MapScreen = ({ navigation }) => {
       {/* Viewport Overlay */}
       <ViewportOverlay
         aspectRatio={settings.aspectRatio.ratio}
-        showGrid={settings.showGrid}
       />
 
       {/* Theme Preview - positioned to match viewport */}
@@ -657,6 +656,7 @@ const styles = StyleSheet.create({
   previewImage: {
     width: '100%',
     height: '100%',
+    imageRendering: 'pixelated', // Disable smoothing for sharp pixels
   },
   previewLabel: {
     position: 'absolute',

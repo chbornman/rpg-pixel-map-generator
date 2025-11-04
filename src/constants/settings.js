@@ -143,7 +143,6 @@ export const DEFAULT_MAP_FEATURES = {
 // Capture defaults (stored in projects)
 export const DEFAULT_CAPTURE_SETTINGS = {
   aspectRatio: ASPECT_RATIOS.SQUARE,
-  showGrid: false,
   mapFeatures: DEFAULT_MAP_FEATURES,
 };
 

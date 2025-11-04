@@ -59,7 +59,6 @@ export const createProject = ({
     // Capture settings (viewport configuration and map features)
     settings: {
       aspectRatio: settings.aspectRatio,
-      showGrid: settings.showGrid || false,
       mapFeatures: settings.mapFeatures || {
         roads: true,
         buildings: true,
